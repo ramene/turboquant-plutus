@@ -1,17 +1,32 @@
-# TurboQuant: FP8 KV Cache Inference for Finance LLMs
+# TurboQuant: FP8 KV Cache Inference for Finance LLMs — A Reference Deployment (2026)
 
-**2x inference throughput on consumer GPUs at $0.17/hr**
+> **Status — Decommissioned reference deployment.** The RunPod pod that backed
+> this work was taken down due to provider-reliability constraints. The
+> *technique* — FP8 KV cache via vLLM, with the documented config corrections —
+> remains valid on any vLLM-capable provider. This repository is preserved as
+> a reference implementation. The empirical results below (2× throughput on
+> RTX A4000 at \$0.17/hr) were measured on the original deployment in
+> April 2026 and are reported here as historical evidence, not as an active
+> production claim.
+>
+> Cited in the [memory-oracle paper](https://github.com/ramene/memory-oracle/blob/main/paper/lncs/main.tex)
+> §7 as the engineering pairing for Evidence-Bound Retrieval's longer
+> amendment-merged contexts.
 
-Deploy a finance-trained 3B parameter LLM (Plutus-3B) with FP8 KV cache compression on RunPod, achieving 2x throughput compared to standard inference — for less than the cost of a cup of coffee per day.
+**2× inference throughput on consumer GPUs at \$0.17/hr** *(demonstrated, April 2026 reference deployment)*
+
+This repo documents the deployment of a finance-trained 3B-parameter LLM
+(Plutus-3B) with FP8 KV cache compression on RunPod, demonstrating 2× throughput
+compared to standard inference — for less than the cost of a cup of coffee per day.
 
 ## The Journey
 
-This repo documents the complete path from concept to production deployment:
+This repo documents the complete path from concept to working reference deployment:
 
 1. **The Inspiration** — Nate Jones' research on LLM compute efficiency and inference optimization
 2. **The Failed Attempts** — RunPod serverless (GPU shortage), Modal (priced out at $250/month), vLLM crashes (broken model configs)
 3. **The Discoveries** — Two critical bugs in Plutus-3B's HuggingFace config that break vLLM on ANY provider
-4. **The Solution** — RunPod pod + vLLM + FP8 KV cache + correct config = 2x throughput at $0.17/hr
+4. **The Solution** — RunPod pod + vLLM + FP8 KV cache + correct config = 2× throughput at $0.17/hr (deployment subsequently decommissioned; technique generalizes)
 
 ## What is TurboQuant?
 
@@ -276,13 +291,25 @@ The key insight: buy-side and sell-side inference MUST be on separate endpoints.
 - `docs/JOURNEY.md` — Full narrative from concept to deployment
 - `docs/MODAL-NOTES.md` — Modal deployment notes (for reference)
 
+## Pairing with Evidence-Bound Retrieval (EBR)
+
+The technique TurboQuant validates — FP8 KV cache via vLLM — is the engineering
+pairing referenced in the
+[memory-oracle](https://github.com/ramene/memory-oracle) papers as the
+cost-parity strategy for **longer amendment-merged retrieval contexts** (10–30 KB
+vs. RAG's 2–5 KB). EBR's structural precedence invariant produces longer
+prompts because amendment records are prepended to canonical content; FP8 KV
+cache compression keeps per-token inference cost flat as those prompts grow.
+See [`paper/lncs/main.tex`](https://github.com/ramene/memory-oracle/blob/main/paper/lncs/main.tex)
+§7 for the full discussion. The technique generalizes — any vLLM-capable
+provider can host the same configuration.
+
 ## Credits
 
 - **Plutus-3B** by [0xroyce](https://huggingface.co/0xroyce/Plutus-3B) — finance-trained Llama 3.2 3B
 - **vLLM** — high-throughput LLM serving with FP8 KV cache support
-- **RunPod** — GPU cloud infrastructure
+- **RunPod** — the GPU cloud provider used for the original reference deployment
 - **Nate Jones** — inspiration on LLM compute efficiency
-- Built as part of the [Mae Autonomous Trading Platform](https://github.com/ramene/mae-brain)
 
 ## License
 
